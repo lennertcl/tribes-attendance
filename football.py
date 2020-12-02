@@ -5,6 +5,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from datetime import datetime
+import cv2
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -80,7 +81,7 @@ def updateValue(player_id):
 def getId():
     # initalize the cam
     result = -1
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0 + cv2.CAP_DSHOW)
     # initialize the cv2 QRCode detector
     detector = cv2.QRCodeDetector()
     running = True
@@ -107,4 +108,4 @@ def getId():
 
 
 if __name__ == '__main__':
-  updateValue(getId())
+    updateValue(getId())
