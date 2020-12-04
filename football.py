@@ -101,7 +101,9 @@ def getId():
             if data:
                 running = False
                 result = data
-                cv2.imshow("vinkje.jpg", 1)
+                vinkje = cv2.imread("vinkje.jpg")
+                cv2.imshow("vink", vinkje)
+                cv2.waitKey(0)
                 time.sleep(2)
         # display the result
         cv2.imshow("img", img)
