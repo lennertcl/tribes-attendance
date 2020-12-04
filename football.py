@@ -7,15 +7,16 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from datetime import datetime
-import cv2
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-# The ID and range of a sample spreadsheet.
+# The ID of the spreadsheet
 SPREADSHEET_ID = '13FKqzuFu-A9_JSsTugiw17dOjlVf-_Zn52caU65qWnk'
 
-
+# Get credentials to log in to google spreadsheets api
+# First time log in is necessary, then saved in token.pickle
+# Returns credentials object to connect to spreadsheet
 def getCredentials():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -37,49 +38,62 @@ def getCredentials():
             pickle.dump(creds, token)
     return creds
 
+# Update players value in cell to P/L depending on time
+def updateValue(player_id):
+    # Get the correct cell for player + date
+    row = int(player_id) + 2
+    range_ = getDateColumn() + str(row)
+    inputvalue = {}
+    
+    # Zaterdag of woensdag
+    if datetime.today().weekday() == 5:
+        # Present of late
+        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("10:00", "%H:%M")):
+            inputvalue['values'] = [['P']]
+        else:
+            inputvalue['values'] = [['L']]
+    else:
+        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("19:30", "%H:%M")):
+            inputvalue['values'] = [['P']]
+        else:
+            inputvalue['values'] = [['L']]
+    inputvalue['majorDimension'] = "ROWS"
+    inputvalue['range'] = range_
+    # Update the changes on the sheet
+    updateSheet(inputvalue, range_)
 
+# Update the sheet
+# inputvalue = new value for the cell
+# range_ = the cell range
 def updateSheet(inputvalue, range_):
     service = build('sheets', 'v4', credentials=getCredentials())
 
     # Call the Sheets API
-    print(inputvalue)
     sheet = service.spreadsheets()
     request = sheet.values().update(spreadsheetId=SPREADSHEET_ID, range=range_, valueInputOption='RAW', body=inputvalue)
     response = request.execute()
-    print(response)
 
+# Get the correct column of the sheet based on todays date
+def getDateColumn():
+    range_ = 'G2:AK2' # Date values
+    # Connect to the sheet
+    service = build('sheets', 'v4', credentials=getCredentials())
+    sheet = service.spreadsheets()
+    # Get all dates from the sheet
+    dates = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=range_).execute()
+    values = dates.get('values', [])
+    datestr = datetime.now().strftime("%d/%m")
+    # Find todays date in the list
+    idx = values[0].index(datestr)
+    return colnum_string(idx + 7)
 
+# Convert from an integer to a column string in sheet
 def colnum_string(n):
     string = ""
     while n > 0:
         n, remainder = divmod(n - 1, 26)
         string = chr(65 + remainder) + string
     return string
-
-
-def getDateColumn():
-    service = build('sheets', 'v4', credentials=getCredentials())
-    range_ = 'G2:AK2'
-    sheet = service.spreadsheets()
-    dates = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=range_).execute()
-    values = dates.get('values', [])
-    datestr = datetime.now().strftime("%d/%m")
-    idx = values[0].index(datestr)
-    return colnum_string(idx + 7)
-
-
-def updateValue(player_id):
-    row = int(player_id) + 2
-    range_ = getDateColumn() + str(row)
-    inputvalue = {}
-    if datetime.time(datetime.now()) < datetime.time(datetime.strptime("19:30", "%H:%M")):
-        inputvalue['values'] = [['P']]
-    else:
-        inputvalue['values'] = [['L']]
-    inputvalue['majorDimension'] = "ROWS"
-    inputvalue['range'] = range_
-    updateSheet(inputvalue, range_)
-
 
 def getId():
     # initalize the cam
@@ -112,7 +126,6 @@ def getId():
     cap.release()
     cv2.destroyAllWindows()
     return result
-
 
 if __name__ == '__main__':
     while True:
