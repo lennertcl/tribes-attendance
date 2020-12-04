@@ -84,7 +84,7 @@ def updateValue(player_id):
 def getId():
     # initalize the cam
     result = -1
-    cap = cv2.VideoCapture(0 + cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(cv2.CAP_DSHOW)
     # initialize the cv2 QRCode detector
     detector = cv2.QRCodeDetector()
     running = True
