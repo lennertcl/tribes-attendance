@@ -97,9 +97,10 @@ def colnum_string(n):
 
 def getId():
     result = -1
+    quit = False
     #windows
     cap = cv2.VideoCapture(cv2.CAP_DSHOW)
-    #mac
+    #mac os
     #cap = cv2.VideoCapture(0)
     # initialize the cv2 QRCode detector
     detector = cv2.QRCodeDetector()
@@ -117,12 +118,12 @@ def getId():
                 result = data
                 vinkje = cv2.imread("vinkje.jpg")
                 cv2.imshow("vink", vinkje)
-                cv2.waitKey(0)
-                time.sleep(1)
+                cv2.waitKey(500)
+                cv2.destroyWindow("vink")
                 break
         # display the result
         cv2.imshow("img", img)
-        if cv2.waitKey(1) == ord("q"):
+        if cv2.waitKey(0) == ord("q"):
             quit = True
             break
     cap.release()
