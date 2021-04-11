@@ -11,12 +11,10 @@ from datetime import datetime
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-# The ID of the spreadsheet
-SPREADSHEET_ID = '13FKqzuFu-A9_JSsTugiw17dOjlVf-_Zn52caU65qWnk'
+# The ID and range of a sample spreadsheet.
+# old SPREADSHEET_ID = '13FKqzuFu-A9_JSsTugiw17dOjlVf-_Zn52caU65qWnk'
+SPREADSHEET_ID = '11S2Cc4PgbG8xBSc6a4t5-OZ2_yKxLGlmMrNBZH8TUr0'
 
-# Get credentials to log in to google spreadsheets api
-# First time log in is necessary, then saved in token.pickle
-# Returns credentials object to connect to spreadsheet
 def getCredentials():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -38,17 +36,43 @@ def getCredentials():
             pickle.dump(creds, token)
     return creds
 
-# Update players value in cell to P/L depending on time
+
+def updateSheet(inputvalue, range_):
+    service = build('sheets', 'v4', credentials=getCredentials())
+
+    # Call the Sheets API
+    print(inputvalue)
+    sheet = service.spreadsheets()
+    request = sheet.values().update(spreadsheetId=SPREADSHEET_ID, range=range_, valueInputOption='RAW', body=inputvalue)
+    response = request.execute()
+    print(response)
+
+
+def colnum_string(n):
+    string = ""
+    while n > 0:
+        n, remainder = divmod(n - 1, 26)
+        string = chr(65 + remainder) + string
+    return string
+
+
+def getDateColumn():
+    service = build('sheets', 'v4', credentials=getCredentials())
+    range_ = 'G2:AK2'
+    sheet = service.spreadsheets()
+    dates = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=range_).execute()
+    values = dates.get('values', [])
+    datestr = datetime.now().strftime("%d/%m")
+    idx = values[0].index(datestr)
+    return colnum_string(idx + 7)
+
+
 def updateValue(player_id):
-    # Get the correct cell for player + date
     row = int(player_id) + 2
     range_ = getDateColumn() + str(row)
     inputvalue = {}
-    
-    # Zaterdag of woensdag
     if datetime.today().weekday() == 5:
-        # Present of late
-        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("10:00", "%H:%M")):
+        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("9:45", "%H:%M")):
             inputvalue['values'] = [['P']]
         else:
             inputvalue['values'] = [['L']]
@@ -59,52 +83,17 @@ def updateValue(player_id):
             inputvalue['values'] = [['L']]
     inputvalue['majorDimension'] = "ROWS"
     inputvalue['range'] = range_
-    # Update the changes on the sheet
     updateSheet(inputvalue, range_)
 
-# Update the sheet
-# inputvalue = new value for the cell
-# range_ = the cell range
-def updateSheet(inputvalue, range_):
-    service = build('sheets', 'v4', credentials=getCredentials())
-
-    # Call the Sheets API
-    sheet = service.spreadsheets()
-    request = sheet.values().update(spreadsheetId=SPREADSHEET_ID, range=range_, valueInputOption='RAW', body=inputvalue)
-    response = request.execute()
-
-# Get the correct column of the sheet based on todays date
-def getDateColumn():
-    range_ = 'G2:AK2' # Date values
-    # Connect to the sheet
-    service = build('sheets', 'v4', credentials=getCredentials())
-    sheet = service.spreadsheets()
-    # Get all dates from the sheet
-    dates = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=range_).execute()
-    values = dates.get('values', [])
-    datestr = datetime.now().strftime("%d/%m")
-    # Find todays date in the list
-    idx = values[0].index(datestr)
-    return colnum_string(idx + 7)
-
-# Convert from an integer to a column string in sheet
-def colnum_string(n):
-    string = ""
-    while n > 0:
-        n, remainder = divmod(n - 1, 26)
-        string = chr(65 + remainder) + string
-    return string
 
 def getId():
+    # initalize the cam
     result = -1
-    quit = False
-    #windows
-    cap = cv2.VideoCapture(cv2.CAP_DSHOW)
-    #mac os
-    #cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0)
     # initialize the cv2 QRCode detector
     detector = cv2.QRCodeDetector()
-    while True:
+    running = True
+    while running:
         _, img = cap.read()
         # detect and decode
         data, bbox, _ = detector.detectAndDecode(img)
@@ -115,27 +104,28 @@ def getId():
                 # draw all lines
                 cv2.line(img, tuple(bbox[i][0]), tuple(bbox[(i + 1) % len(bbox)][0]), color=(255, 0, 0), thickness=2)
             if data:
+                running = False
                 result = data
-                vinkje = cv2.imread("vinkje.jpg")
-                cv2.imshow("vink", vinkje)
-                cv2.waitKey(500)
-                cv2.destroyWindow("vink")
-                break
+                vn = cv2.imread('vinkje.jpeg',-1)
+                cv2.imshow('TICKET TO JUNIORBOWL 2021', vn)
+                time.sleep(2)
         # display the result
-        cv2.imshow("img", img)
-        if cv2.waitKey(0) == ord("q"):
-            quit = True
+        cv2.imshow("practice attendance (Lennert en Robbe zijn MVP)", img)
+        if cv2.waitKey(1) == ord("q"):
             break
     cap.release()
     cv2.destroyAllWindows()
-    if quit:
-        return -1
     return result
+
 
 if __name__ == '__main__':
     while True:
-        value = getId()
-        if value == -1:
-            break
-        else:
-            updateValue(value)
+        try:
+            id = getId()
+            if id == -1:
+                break
+            updateValue(id)
+        #throws exception when scanned succesfully
+        #mss juiste exception handling nog toevoegen voor moest er echt iets misgaan maar idk welke het juist is die moet gecatched worden
+        except:
+            print(sys.exc_info()[0])
