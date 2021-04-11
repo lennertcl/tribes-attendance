@@ -12,10 +12,11 @@ from datetime import datetime
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-# The ID and range of a sample spreadsheet.
+# Google sheets spreadsheet ID
 # old SPREADSHEET_ID = '13FKqzuFu-A9_JSsTugiw17dOjlVf-_Zn52caU65qWnk'
 SPREADSHEET_ID = '11S2Cc4PgbG8xBSc6a4t5-OZ2_yKxLGlmMrNBZH8TUr0'
 
+# Get google sheets credentials from credentials or token file
 def getCredentials():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -37,7 +38,6 @@ def getCredentials():
             pickle.dump(creds, token)
     return creds
 
-
 def updateSheet(inputvalue, range_):
     service = build('sheets', 'v4', credentials=getCredentials())
 
@@ -48,15 +48,15 @@ def updateSheet(inputvalue, range_):
     response = request.execute()
     print(response)
 
-
-def colnum_string(n):
+# Convert column number to excel column string
+def colnumToString(n):
     string = ""
     while n > 0:
         n, remainder = divmod(n - 1, 26)
         string = chr(65 + remainder) + string
     return string
 
-
+# Get the date column of the spreadsheet
 def getDateColumn():
     service = build('sheets', 'v4', credentials=getCredentials())
     range_ = 'G2:AK2'
@@ -65,9 +65,9 @@ def getDateColumn():
     values = dates.get('values', [])
     datestr = datetime.now().strftime("%d/%m")
     idx = values[0].index(datestr)
-    return colnum_string(idx + 7)
+    return colnumToString(idx + 7)
 
-
+# Update the value of a player in the sheet after scanning
 def updateValue(player_id):
     row = int(player_id) + 2
     range_ = getDateColumn() + str(row)
@@ -86,7 +86,7 @@ def updateValue(player_id):
     inputvalue['range'] = range_
     updateSheet(inputvalue, range_)
 
-
+# Get a player ID through scanning qr code
 def getId():
     # initalize the cam
     result = -1
@@ -127,6 +127,5 @@ if __name__ == '__main__':
                 break
             updateValue(id)
         #throws exception when scanned succesfully
-        #mss juiste exception handling nog toevoegen voor moest er echt iets misgaan maar idk welke het juist is die moet gecatched worden
-        except:
+        except Exception:
             print(sys.exc_info()[0])
