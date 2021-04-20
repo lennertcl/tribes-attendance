@@ -8,13 +8,13 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from datetime import datetime
+from config import Config
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 # Google sheets spreadsheet ID
-# old SPREADSHEET_ID = '13FKqzuFu-A9_JSsTugiw17dOjlVf-_Zn52caU65qWnk'
-SPREADSHEET_ID = '11S2Cc4PgbG8xBSc6a4t5-OZ2_yKxLGlmMrNBZH8TUr0'
+SPREADSHEET_ID = Config.SHEET_ID
 
 # Get google sheets credentials from credentials or token file
 def getCredentials():
@@ -72,15 +72,12 @@ def updateValue(player_id):
     row = int(player_id) + 2
     range_ = getDateColumn() + str(row)
     inputvalue = {}
-    if datetime.today().weekday() == 5:
-        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("9:45", "%H:%M")):
-            inputvalue['values'] = [['P']]
-        else:
-            inputvalue['values'] = [['L']]
+    if (datetime.time(datetime.now()) <
+        datetime.time(datetime.strptime(
+            Config.MEETINGS[datetime.today().weekday()]), "%H:%M")
+        ):
+        inputvalue['values'] = [['P']]
     else:
-        if datetime.time(datetime.now()) < datetime.time(datetime.strptime("19:30", "%H:%M")):
-            inputvalue['values'] = [['P']]
-        else:
             inputvalue['values'] = [['L']]
     inputvalue['majorDimension'] = "ROWS"
     inputvalue['range'] = range_
@@ -107,11 +104,11 @@ def getId():
             if data:
                 running = False
                 result = data
-                vn = cv2.imread('vinkje.jpeg',-1)
-                cv2.imshow('TICKET TO JUNIORBOWL 2021', vn)
+                vn = cv2.imread('checkmark.png',-1)
+                cv2.imshow(Config.SCANOKAY_WINDOW_TITLE, vn)
                 time.sleep(2)
         # display the result
-        cv2.imshow("practice attendance (Lennert en Robbe zijn MVP)", img)
+        cv2.imshow(Config.SCANNER_WINDOW_TITLE, img)
         if cv2.waitKey(1) == ord("q"):
             break
     cap.release()
