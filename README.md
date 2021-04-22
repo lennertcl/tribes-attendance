@@ -9,8 +9,14 @@ Create a spreadsheet with a layout like this example spreadsheet (or make a copy
 [Example sheet](https://docs.google.com/spreadsheets/d/1GHKTF-wD1uFAr05xRbIQ0OZ1T8dA0MOjeYovrxiofEg/edit?usp=drivesdk)
 
 Give the app access to your spreadsheet. 
-Follow this tutorial from the start to 3:30:
-[Tutorial](https://youtu.be/T1vqS1NL89E)
+Follow this tutorial to make a project:
+[Tutorial](https://developers.google.com/workspace/guides/create-project)
+Go to Api's and services:
+* You'll need to enable the Google Sheets api. 
+* Configure the OAuth consent screen.
+* Under test users, click add users and the sheet owner's gmail address. 
+* Go to credentials and click on create credentials -> OAuth client ID.
+* Select desktop app for application type and give it a name.
 
 ### Set the config variables
 
@@ -29,8 +35,8 @@ Example:
 ```python
 Class Config():
     SHEET_ID="Your spreadsheet ID"
-    MEETINGS=[(2, "19:30"),
-              (5, "10:00")]
+    MEETINGS= {2: "19:30",
+               5: "10:00"}
     SCANNER_WINDOW_TITLE="Can be anything"
     SCANOKAY_WINDOW_TITLE="Can be anything"
     SCANOKAY_IMAGE="Image file to show"

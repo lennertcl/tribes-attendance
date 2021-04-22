@@ -4,3 +4,4 @@ class Config():
               5: "10:00"}
     SCANNER_WINDOW_TITLE="Scan your QR code"
     SCANOKAY_WINDOW_TITLE="Scan succesful"
+    SCANOKAY_IMAGE="checkmark.png"

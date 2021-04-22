@@ -69,13 +69,14 @@ def getDateColumn():
 
 # Update the value of a player in the sheet after scanning
 def updateValue(player_id):
+    print(player_id)
     row = int(player_id) + 2
     range_ = getDateColumn() + str(row)
     inputvalue = {}
     if (datetime.time(datetime.now()) <
         datetime.time(datetime.strptime(
-            Config.MEETINGS[datetime.today().weekday()]), "%H:%M")
-        ):
+            Config.MEETINGS[datetime.today().weekday()], "%H:%M")
+        )):
         inputvalue['values'] = [['P']]
     else:
             inputvalue['values'] = [['L']]
@@ -87,7 +88,7 @@ def updateValue(player_id):
 def getId():
     # initalize the cam
     result = -1
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     # initialize the cv2 QRCode detector
     detector = cv2.QRCodeDetector()
     running = True
@@ -104,7 +105,7 @@ def getId():
             if data:
                 running = False
                 result = data
-                vn = cv2.imread('checkmark.png',-1)
+                vn = cv2.imread(Config.SCANOKAY_IMAGE,-1)
                 cv2.imshow(Config.SCANOKAY_WINDOW_TITLE, vn)
                 time.sleep(2)
         # display the result
@@ -124,5 +125,5 @@ if __name__ == '__main__':
                 break
             updateValue(id)
         #throws exception when scanned succesfully
-        except Exception:
-            print(sys.exc_info()[0])
+        except Exception as e:
+            print(e)
