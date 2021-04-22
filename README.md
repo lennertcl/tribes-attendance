@@ -8,9 +8,11 @@ An attendance tracker for teams.
 Create a spreadsheet with a layout like this example spreadsheet (or make a copy):
 [Example sheet](https://docs.google.com/spreadsheets/d/1GHKTF-wD1uFAr05xRbIQ0OZ1T8dA0MOjeYovrxiofEg/edit?usp=drivesdk)
 
-Give the app access to your spreadsheet. 
+Give the app access to your spreadsheet.
+
 Follow this tutorial to make a project:
 [Tutorial](https://developers.google.com/workspace/guides/create-project)
+
 Go to Api's and services:
 * You'll need to enable the Google Sheets api. 
 * Configure the OAuth consent screen.
